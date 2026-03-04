@@ -4,9 +4,9 @@ import com.logdownloader.model.Credential;
 import com.logdownloader.model.DownloadJob;
 import com.logdownloader.model.Module;
 import com.logdownloader.model.Server;
+import com.logdownloader.processor.LogProcessorService;
 import com.logdownloader.repository.DownloadJobRepository;
 import com.logdownloader.sftp.SftpService;
-import com.logdownloader.service.LogProcessorService;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
@@ -40,11 +40,9 @@ public class DownloadWorker {
 
             while (true) {
 
-                DownloadJob job = null;
-
                 try {
 
-                    job = queueService.takeJob();
+                    DownloadJob job = queueService.takeJob();
 
                     job.setStatus("RUNNING");
                     jobRepository.save(job);
@@ -61,7 +59,7 @@ public class DownloadWorker {
 
                     String localPath = "/tmp/job_" + job.getId() + ".log";
 
-                    // Download logs via SFTP
+                    // Download file via SFTP
                     sftpService.downloadFile(
                             host,
                             port,
@@ -89,11 +87,6 @@ public class DownloadWorker {
                 } catch (Exception e) {
 
                     e.printStackTrace();
-
-                    if (job != null) {
-                        job.setStatus("FAILED");
-                        jobRepository.save(job);
-                    }
                 }
             }
 
