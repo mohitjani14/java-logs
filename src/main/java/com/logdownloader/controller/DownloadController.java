@@ -1,7 +1,10 @@
 package com.logdownloader.controller;
 
 import com.logdownloader.model.DownloadJob;
+import com.logdownloader.model.Module;
 import com.logdownloader.repository.DownloadJobRepository;
+import com.logdownloader.repository.ModuleRepository;
+import com.logdownloader.queue.DownloadQueueService;
 import com.logdownloader.service.DownloadService;
 
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +15,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 
 import java.io.File;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/download")
@@ -20,7 +24,13 @@ public class DownloadController {
     private final DownloadService downloadService;
 
     @Autowired
-    private DownloadJobRepository downloadJobRepository;
+    private DownloadJobRepository jobRepository;
+
+    @Autowired
+    private ModuleRepository moduleRepository;
+
+    @Autowired
+    private DownloadQueueService downloadQueueService;
 
     public DownloadController(DownloadService downloadService) {
         this.downloadService = downloadService;
@@ -28,28 +38,28 @@ public class DownloadController {
 
     @PostMapping("/{moduleId}")
     public DownloadJob startDownload(
-        @PathVariable Long moduleId,
-        @RequestParam String from,
-        @RequestParam String to) {
+            @PathVariable Long moduleId,
+            @RequestParam String from,
+            @RequestParam String to) {
 
-    Module module = moduleRepository.findById(moduleId)
-            .orElseThrow(() -> new RuntimeException("Module not found"));
+        Module module = moduleRepository.findById(moduleId)
+                .orElseThrow(() -> new RuntimeException("Module not found"));
 
-    DownloadJob job = new DownloadJob();
+        DownloadJob job = new DownloadJob();
 
-    job.setModule(module);
-    job.setRequestedDate(from);   // keep compatibility
-    job.setFromDate(from);
-    job.setToDate(to);
-    job.setStatus("QUEUED");
-    job.setCreatedAt(LocalDateTime.now());
+        job.setModule(module);
+        job.setRequestedDate(from); // compatibility
+        job.setFromDate(from);
+        job.setToDate(to);
+        job.setStatus("QUEUED");
+        job.setCreatedAt(LocalDateTime.now());
 
-    jobRepository.save(job);
+        jobRepository.save(job);
 
-    downloadQueueService.enqueue(job);
+        downloadQueueService.enqueue(job);
 
-    return job;
-}
+        return job;
+    }
 
     @GetMapping("/status/{jobId}")
     public DownloadJob getStatus(@PathVariable Long jobId) {
@@ -60,7 +70,7 @@ public class DownloadController {
     @GetMapping("/file/{jobId}")
     public ResponseEntity<Resource> downloadFile(@PathVariable Long jobId) throws Exception {
 
-        DownloadJob job = downloadJobRepository.findById(jobId)
+        DownloadJob job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new RuntimeException("Job not found"));
 
         String filePath = job.getFilePath();
