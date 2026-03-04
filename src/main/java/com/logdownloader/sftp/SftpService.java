@@ -5,8 +5,6 @@ import net.schmizz.sshj.sftp.SFTPClient;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import org.springframework.stereotype.Service;
 
-import java.io.FileOutputStream;
-
 @Service
 public class SftpService {
 
@@ -28,11 +26,9 @@ public class SftpService {
 
             SFTPClient sftpClient = sshClient.newSFTPClient();
 
-            FileOutputStream fos = new FileOutputStream(localPath);
+            // Correct way
+            sftpClient.get(remotePath, localPath);
 
-            sftpClient.get(remotePath, fos);
-
-            fos.close();
             sftpClient.close();
             sshClient.disconnect();
 
@@ -41,7 +37,5 @@ public class SftpService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
-
 }
