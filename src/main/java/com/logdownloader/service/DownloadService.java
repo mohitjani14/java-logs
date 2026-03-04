@@ -23,7 +23,7 @@ public class DownloadService {
         this.queueService = queueService;
     }
 
-    public DownloadJob createJob(Long moduleId) {
+    public DownloadJob createJob(Long moduleId, String date) {
 
         Module module = moduleRepository.findById(moduleId).orElseThrow();
 

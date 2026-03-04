@@ -6,9 +6,12 @@ import com.logdownloader.model.Module;
 import com.logdownloader.model.Server;
 import com.logdownloader.repository.DownloadJobRepository;
 import com.logdownloader.sftp.SftpService;
+import com.logdownloader.service.LogProcessorService;
+
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Component
@@ -17,14 +20,17 @@ public class DownloadWorker {
     private final DownloadQueueService queueService;
     private final DownloadJobRepository jobRepository;
     private final SftpService sftpService;
+    private final LogProcessorService processor;
 
     public DownloadWorker(DownloadQueueService queueService,
                           DownloadJobRepository jobRepository,
-                          SftpService sftpService) {
+                          SftpService sftpService,
+                          LogProcessorService processor) {
 
         this.queueService = queueService;
         this.jobRepository = jobRepository;
         this.sftpService = sftpService;
+        this.processor = processor;
     }
 
     @PostConstruct
@@ -34,9 +40,11 @@ public class DownloadWorker {
 
             while (true) {
 
+                DownloadJob job = null;
+
                 try {
 
-                    DownloadJob job = queueService.takeJob();
+                    job = queueService.takeJob();
 
                     job.setStatus("RUNNING");
                     jobRepository.save(job);
@@ -53,6 +61,7 @@ public class DownloadWorker {
 
                     String localPath = "/tmp/job_" + job.getId() + ".log";
 
+                    // Download logs via SFTP
                     sftpService.downloadFile(
                             host,
                             port,
@@ -62,8 +71,17 @@ public class DownloadWorker {
                             localPath
                     );
 
+                    // Filter logs by requested date
+                    String filteredFile = "/tmp/job_" + job.getId() + "_filtered.log";
+
+                    processor.filterLogsByDate(
+                            localPath,
+                            LocalDate.parse(job.getRequestedDate()),
+                            filteredFile
+                    );
+
                     job.setStatus("COMPLETED");
-                    job.setFilePath(localPath);
+                    job.setFilePath(filteredFile);
                     job.setCompletedAt(LocalDateTime.now());
 
                     jobRepository.save(job);
@@ -71,6 +89,11 @@ public class DownloadWorker {
                 } catch (Exception e) {
 
                     e.printStackTrace();
+
+                    if (job != null) {
+                        job.setStatus("FAILED");
+                        jobRepository.save(job);
+                    }
                 }
             }
 
