@@ -11,18 +11,14 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true)
     private String username;
 
-    private String email;
+    private String password;
 
-    private String role;
-
-    private boolean adUser;
+    private String role; // ADMIN or USER
 
     private LocalDateTime createdAt = LocalDateTime.now();
-
-    public User() {}
 
     public Long getId() {
         return id;
@@ -36,12 +32,12 @@ public class User {
         this.username = username;
     }
 
-    public String getEmail() {
-        return email;
+    public String getPassword() {
+        return password;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getRole() {
@@ -52,15 +48,8 @@ public class User {
         this.role = role;
     }
 
-    public boolean isAdUser() {
-        return adUser;
-    }
-
-    public void setAdUser(boolean adUser) {
-        this.adUser = adUser;
-    }
-
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
+
 }
