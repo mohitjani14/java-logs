@@ -30,6 +30,7 @@ public class DownloadService {
         DownloadJob job = new DownloadJob();
         job.setModule(module);
         job.setStatus("QUEUED");
+        job.setRequestedDate(date);
 
         job = downloadJobRepository.save(job);
 

@@ -15,6 +15,8 @@ public class DownloadJob {
 
     private String filePath;
 
+    private String requestedDate;
+
     private LocalDateTime createdAt = LocalDateTime.now();
 
     private LocalDateTime completedAt;
@@ -43,6 +45,14 @@ public class DownloadJob {
 
     public void setFilePath(String filePath) {
         this.filePath = filePath;
+    }
+
+    public String getRequestedDate() {
+        return requestedDate;
+    }
+
+    public void setRequestedDate(String requestedDate) {
+        this.requestedDate = requestedDate;
     }
 
     public LocalDateTime getCreatedAt() {

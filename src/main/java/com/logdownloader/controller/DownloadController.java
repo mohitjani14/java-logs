@@ -16,7 +16,7 @@ public class DownloadController {
 
     @PostMapping("/{moduleId}")
     public DownloadJob startDownload(@PathVariable Long moduleId,
-                                 @RequestParam String date) {
+                                     @RequestParam String date) {
 
     return downloadService.createJob(moduleId, date);
     }
