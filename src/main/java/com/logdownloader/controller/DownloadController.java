@@ -1,30 +1,28 @@
 package com.logdownloader.controller;
 
-import com.logdownloader.sftp.SftpService;
+import com.logdownloader.model.DownloadJob;
+import com.logdownloader.service.DownloadService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/download")
 public class DownloadController {
 
-    private final SftpService sftpService;
+    private final DownloadService downloadService;
 
-    public DownloadController(SftpService sftpService) {
-        this.sftpService = sftpService;
+    public DownloadController(DownloadService downloadService) {
+        this.downloadService = downloadService;
     }
 
-    @PostMapping
-    public String download() {
+    @PostMapping("/{moduleId}")
+    public DownloadJob startDownload(@PathVariable Long moduleId) {
 
-        sftpService.downloadFile(
-                "192.168.1.11",         // server ip
-                2222,
-                "mohit",                // username
-                "123",            // password
-                "/var/log/app.log",    // remote file
-                "/tmp/app.log"         // local file
-        );
+        return downloadService.createJob(moduleId);
+    }
 
-        return "Download started";
+    @GetMapping("/status/{jobId}")
+    public DownloadJob getStatus(@PathVariable Long jobId) {
+
+        return downloadService.getJob(jobId);
     }
 }
