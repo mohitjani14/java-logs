@@ -6,6 +6,7 @@ import com.logdownloader.model.Module;
 import com.logdownloader.model.Server;
 import com.logdownloader.repository.DownloadJobRepository;
 import com.logdownloader.sftp.SftpService;
+import com.logdownloader.util.ZipService;
 import jakarta.annotation.PostConstruct;
 import net.schmizz.sshj.sftp.RemoteResourceInfo;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -21,14 +23,17 @@ public class DownloadWorker {
     private final DownloadQueueService queueService;
     private final DownloadJobRepository jobRepository;
     private final SftpService sftpService;
+    private final ZipService zipService;
 
     public DownloadWorker(DownloadQueueService queueService,
                           DownloadJobRepository jobRepository,
-                          SftpService sftpService) {
+                          SftpService sftpService,
+                          ZipService zipService) {
 
         this.queueService = queueService;
         this.jobRepository = jobRepository;
         this.sftpService = sftpService;
+        this.zipService = zipService;
     }
 
     @PostConstruct
@@ -67,6 +72,8 @@ public class DownloadWorker {
                             remoteDir
                     );
 
+                    List<String> downloadedFiles = new ArrayList<>();
+
                     for (RemoteResourceInfo file : files) {
 
                         String name = file.getName();
@@ -94,7 +101,7 @@ public class DownloadWorker {
                         if (match) {
 
                             String remoteFile = remoteDir + "/" + name;
-                            String localFile = "/tmp/job_" + job.getId() + "_" + name;
+                            String localFile = "/tmp/" + name;
 
                             sftpService.downloadFile(
                                     host,
@@ -104,12 +111,18 @@ public class DownloadWorker {
                                     remoteFile,
                                     localFile
                             );
+
+                            downloadedFiles.add(localFile);
                         }
                     }
 
+                    String zipFile = "/tmp/" + module.getName() + ".zip";
+
+                    zipService.zipFiles(downloadedFiles, zipFile);
+
                     job.setStatus("COMPLETED");
+                    job.setFilePath(zipFile);
                     job.setCompletedAt(java.time.LocalDateTime.now());
-                    job.setFilePath("/tmp");
 
                     jobRepository.save(job);
 
