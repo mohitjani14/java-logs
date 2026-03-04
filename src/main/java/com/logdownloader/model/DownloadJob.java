@@ -20,6 +20,10 @@ public class DownloadJob {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     private LocalDateTime completedAt;
+    
+    private String fromDate;
+    
+    private String toDate;
 
     @ManyToOne
     @JoinColumn(name = "module_id")
@@ -73,5 +77,21 @@ public class DownloadJob {
 
     public void setModule(Module module) {
         this.module = module;
+    }
+
+    public String getFromDate() {
+    return fromDate;
+    }
+
+    public void setFromDate(String fromDate) {
+    this.fromDate = fromDate;
+    }
+
+    public String getToDate() {
+    return toDate;
+    }
+
+    public void setToDate(String toDate) {
+    this.toDate = toDate;
     }
 }

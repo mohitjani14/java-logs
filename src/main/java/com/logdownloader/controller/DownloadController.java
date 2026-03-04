@@ -27,11 +27,29 @@ public class DownloadController {
     }
 
     @PostMapping("/{moduleId}")
-    public DownloadJob startDownload(@PathVariable Long moduleId,
-                                     @RequestParam String date) {
+    public DownloadJob startDownload(
+        @PathVariable Long moduleId,
+        @RequestParam String from,
+        @RequestParam String to) {
 
-        return downloadService.createJob(moduleId, date);
-    }
+    Module module = moduleRepository.findById(moduleId)
+            .orElseThrow(() -> new RuntimeException("Module not found"));
+
+    DownloadJob job = new DownloadJob();
+
+    job.setModule(module);
+    job.setRequestedDate(from);   // keep compatibility
+    job.setFromDate(from);
+    job.setToDate(to);
+    job.setStatus("QUEUED");
+    job.setCreatedAt(LocalDateTime.now());
+
+    jobRepository.save(job);
+
+    downloadQueueService.enqueue(job);
+
+    return job;
+}
 
     @GetMapping("/status/{jobId}")
     public DownloadJob getStatus(@PathVariable Long jobId) {

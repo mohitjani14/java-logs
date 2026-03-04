@@ -94,15 +94,14 @@ public class DownloadWorker {
 
                         long mtime = file.getAttributes().getMtime();
 
+                        LocalDate from = LocalDate.parse(job.getFromDate());
+                        LocalDate to = LocalDate.parse(job.getToDate());
+
                         LocalDate fileDate = Instant.ofEpochSecond(mtime)
                                 .atZone(ZoneId.systemDefault())
                                 .toLocalDate();
 
-                        if (fileDate.equals(requestedDate)) {
-                            match = true;
-                        }
-
-                        if (match) {
+                        if (!fileDate.isBefore(from) && !fileDate.isAfter(to)) {
 
                             String remoteFile = remoteDir + "/" + name;
                             String localFile = "/tmp/" + name;
