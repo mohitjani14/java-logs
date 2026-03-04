@@ -10,6 +10,8 @@ import com.logdownloader.util.ZipService;
 import jakarta.annotation.PostConstruct;
 import net.schmizz.sshj.sftp.RemoteResourceInfo;
 import org.springframework.stereotype.Component;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import java.time.Instant;
 import java.time.LocalDate;
