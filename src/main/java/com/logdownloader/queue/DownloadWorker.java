@@ -39,6 +39,8 @@ public class DownloadWorker {
     @PostConstruct
     public void startWorker() {
 
+        ExecutorService executor = Executors.newFixedThreadPool(5);
+
         System.out.println("Download Worker Started");
 
         Thread worker = new Thread(() -> {

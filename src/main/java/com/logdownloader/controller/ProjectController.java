@@ -1,7 +1,7 @@
 package com.logdownloader.controller;
 
 import com.logdownloader.model.Project;
-import com.logdownloader.service.ProjectService;
+import com.logdownloader.repository.ProjectRepository;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -10,20 +10,15 @@ import java.util.List;
 @RequestMapping("/api/projects")
 public class ProjectController {
 
-    private final ProjectService projectService;
+    private final ProjectRepository projectRepository;
 
-    public ProjectController(ProjectService projectService) {
-        this.projectService = projectService;
-    }
-
-    @PostMapping
-    public Project createProject(@RequestBody Project project) {
-        return projectService.createProject(project);
+    public ProjectController(ProjectRepository projectRepository) {
+        this.projectRepository = projectRepository;
     }
 
     @GetMapping
-    public List<Project> getProjects() {
-        return projectService.getAllProjects();
+    public List<Project> getAllProjects() {
+        return projectRepository.findAll();
     }
 
 }

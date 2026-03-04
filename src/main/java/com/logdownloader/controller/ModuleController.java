@@ -1,7 +1,7 @@
 package com.logdownloader.controller;
 
 import com.logdownloader.model.Module;
-import com.logdownloader.service.ModuleService;
+import com.logdownloader.repository.ModuleRepository;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -10,19 +10,15 @@ import java.util.List;
 @RequestMapping("/api/modules")
 public class ModuleController {
 
-    private final ModuleService moduleService;
+    private final ModuleRepository moduleRepository;
 
-    public ModuleController(ModuleService moduleService) {
-        this.moduleService = moduleService;
-    }
-
-    @PostMapping
-    public Module createModule(@RequestBody Module module) {
-        return moduleService.createModule(module);
+    public ModuleController(ModuleRepository moduleRepository) {
+        this.moduleRepository = moduleRepository;
     }
 
     @GetMapping
-    public List<Module> getModules() {
-        return moduleService.getModules();
+    public List<Module> getModulesByProject(@RequestParam Long projectId) {
+        return moduleRepository.findByProjectId(projectId);
     }
+
 }
