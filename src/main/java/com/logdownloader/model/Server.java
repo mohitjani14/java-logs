@@ -18,6 +18,11 @@ public class Server {
 
     private String description;
 
+    // 🔹 Link credential to server
+    @ManyToOne
+    @JoinColumn(name = "credential_id")
+    private Credential credential;
+
     public Server() {}
 
     public Long getId() {
@@ -54,5 +59,14 @@ public class Server {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    // 🔹 Getter and Setter for credential
+    public Credential getCredential() {
+        return credential;
+    }
+
+    public void setCredential(Credential credential) {
+        this.credential = credential;
     }
 }
