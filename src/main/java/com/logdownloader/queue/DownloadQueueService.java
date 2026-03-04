@@ -20,6 +20,11 @@ public class DownloadQueueService {
         }
     }
 
+    // Added method to support new controller code
+    public void enqueue(DownloadJob job) {
+        addJob(job);
+    }
+
     public DownloadJob takeJob() throws InterruptedException {
         return queue.take();
     }
