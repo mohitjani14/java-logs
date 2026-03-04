@@ -3,8 +3,17 @@ package com.logdownloader.controller;
 import com.logdownloader.model.DownloadJob;
 import com.logdownloader.service.DownloadService;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import java.io.File;
 
 @RestController
+
+@Autowired
+private DownloadJobRepository downloadJobRepository;
+
 @RequestMapping("/api/download")
 public class DownloadController {
 
@@ -26,4 +35,22 @@ public class DownloadController {
 
         return downloadService.getJob(jobId);
     }
+
+    @GetMapping("/file/{jobId}")
+    public ResponseEntity<Resource> downloadFile(@PathVariable Long jobId) throws Exception {
+
+    DownloadJob job = downloadJobRepository.findById(jobId)
+            .orElseThrow(() -> new RuntimeException("Job not found"));
+
+    String filePath = job.getFilePath();
+
+    File file = new File(filePath);
+
+    Resource resource = new UrlResource(file.toURI());
+
+    return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION,
+                    "attachment; filename=" + file.getName())
+            .body(resource);
+}
 }
