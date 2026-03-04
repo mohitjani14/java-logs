@@ -1,30 +1,41 @@
-package com.logdownloader.controller;
+package com.logdownloader.sftp;
 
-import com.logdownloader.sftp.SftpService;
-import org.springframework.web.bind.annotation.*;
+import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.sftp.SFTPClient;
+import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
+import org.springframework.stereotype.Service;
 
-@RestController
-@RequestMapping("/api/download")
-public class DownloadController {
+@Service
+public class SftpService {
 
-    private final SftpService sftpService;
+    public void downloadFile(String host,
+                             int port,
+                             String username,
+                             String password,
+                             String remotePath,
+                             String localPath) {
 
-    public DownloadController(SftpService sftpService) {
-        this.sftpService = sftpService;
-    }
+        try {
 
-    @PostMapping
-    public String download() {
+            SSHClient sshClient = new SSHClient();
+            sshClient.addHostKeyVerifier(new PromiscuousVerifier());
 
-        sftpService.downloadFile(
-                "192.168.1.11",         // server ip
-                2222,
-                "mohit",                // username
-                "123",            // password
-                "/var/log/app.log",    // remote file
-                "/tmp/app.log"         // local file
-        );
+            sshClient.connect(host, port);
 
-        return "Download started";
+            sshClient.authPassword(username, password);
+
+            SFTPClient sftpClient = sshClient.newSFTPClient();
+
+            // Correct way
+            sftpClient.get(remotePath, localPath);
+
+            sftpClient.close();
+            sshClient.disconnect();
+
+            System.out.println("File downloaded successfully");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
